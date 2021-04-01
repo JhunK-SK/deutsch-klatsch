@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'mptt',
     'channels',
     'debug_toolbar',
+    'storages', 
     
     
     # Locals
@@ -78,7 +79,7 @@ hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
 INTERNAL_IPS = [ip[:-1] + '1' for ip in ips]
 print(INTERNAL_IPS[0])
 
-# SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 # SECURE_SSL_REDIRECT = env.bool("DJANGO_SECURE_SSL_REDIRECT", default=True)
 # SECURE_HSTS_SECONDS = env.int("DJANGO_SECURE_HSTS_SECONDS", default=2592000)
 # SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool("DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", default=True)
@@ -172,16 +173,35 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-STATIC_URL = '/staticfiles/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     str(BASE_DIR.joinpath('static')),
 ]
 STATIC_ROOT = str(BASE_DIR.joinpath('staticfiles'))
+STATICFILES_FINDERS = [
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+]
+
+# boto3
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
+# aws
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
+AWS_DEFAULT_ACL = 'public-read'
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+AWS_LOCATION = 'static'
+STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'
+
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = str(BASE_DIR.joinpath('media/'))
 
+
+
 AUTH_USER_MODEL = 'accounts.CustomUser'
+
 
 # allauth
 SITE_ID = 1

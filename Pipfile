@@ -19,6 +19,8 @@ django-redis = "*"
 environs = {version = "==8.0.0", extras = ["django"]}
 daphne = "*"
 gunicorn = "*"
+django-storages = "*"
+boto3 = "*"
 
 [dev-packages]
 
