@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% load crispy_forms_tags %}
+
+{% block title %}User Profil{% endblock title %}
+
+{% block content %}
+{% include 'covers/cover-user-profile.html' %}
+
+    <div class="container-fluid mt-2">
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-md-3">
+                <div class="user-info-section">
+                    <div class="picture-box p-1">
+                        <img src="{{ user_info.avatar.url }}" alt="user avatar">
+                    </div>
+                    <div class="user_info_box">
+                        <table>
+                            <tbody class="table table-sm">
+                                <tr>
+                                    <td>Username</td>
+                                    <td>{{ user_info.username }}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">Email <i class="fas fa-hand-point-down" style="font-size: 0.6rem;"></i></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">{{ user_info.email }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Anmeldung</td>
+                                    <td>{{ user_info.date_joined|naturaltime }}</td>
+                                </tr>
+                                <tr>
+                                    <td id="posts-info">Posts</td>
+                                    <td>{% if user_posts %}{{ user_posts.count }}{% else %} 0 {% endif %}</td>
+                                </tr>
+                                <tr>
+                                    <td>Kommentare</td>
+                                    <td>{% if user_comments %}{{ user_comments.count }}{% else %} 0 {% endif %}</td>
+                                </tr>
+                                <tr>
+                                    <td id="topic-info" style="font-size: 0.7rem;">Lieblingsthemen</td>
+                                    <td>{% if user_topics %}{{ user_topics.count }}{% else %} 0 {% endif %}</td>
+                                </tr>
+                                <tr>
+                                    <td>Ups</td>
+                                    <td>{% if user_likes %}{{ user_likes.count }}{% else %} 0 {% endif %}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">
+                                        <form action="{% url 'user:avatar' user.id %}" method="POST" enctype="multipart/form-data" id="avatarForm">
+                                            {% csrf_token %}
+                                            {{ form.avatar }}
+                                            <input type="submit" class="btn btn-sm btn-outline-info mt-1 float-left" value="Ändern">   
+                                        </form>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">
+                                        <a href="{% url 'account_change_password' %}">Passwort ändern</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <!-- <td colspan="2">
+                                        <a href="#"><button class="btn btn-sm btn-info btn-block">Klatsch</button></a>
+                                    </td> -->
+                                </tr>
+                                <tr>
+                                    <td colspan="2">
+                                        <a href="{% url 'user:delete' request.user.id %}">Konto löschen</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md">
+                <div class="user-favorite-topics-section mb-4">
+                    <h5>Themen</h5>
+                    <hr class="m-0">
+                    <div class="user-topics-badges">
+                        {% if user_topics %}
+                            {% for topic in user_topics %}
+                                <a href="{% url 'boards:topic' topic.slug %}" class="badge badge-success">{{ topic }}</a>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-monospace">Sie haben noch keine Lieblingsthemen</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="user-post-section">
+                    <div class="user-post-header-section">
+                        <div class="user-post-pagination-section">
+                            <div class="d-flex justify-content-end float-right">
+                                <div class="user-post-page">
+                                    {% if post_page_obj %}
+                                        <a href="?page=1"><i class="fas fa-angle-double-left"></i></a>
+                                        {% if post_page_obj.has_previous %}
+                                            <a href="?page={{ post_page_obj.previous_page_number }}"><i class="fas fa-angle-left"></i></a>
+                                        {% else %}
+                                            <a href="?page=1"><i class="fas fa-angle-left"></i></a>
+                                        {% endif %}
+                                        
+                                        {% for num in post_page_obj.paginator.page_range %}
+                                            {% if post_page_obj.number == num %}
+                                                <a href="?page={{ num }}"><strong>{{ num }}</strong></a>
+                                            {% elif num > post_page_obj.number|add:'-4' and num < post_page_obj.number|add:'+4' %}
+                                                <a href="?page={{ num }}">{{ num }}</a>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        
+                                        {% if post_page_obj.has_next %}
+                                            <a href="?page={{ post_page_obj.next_page_number }}"><i class="fas fa-angle-right"></i></a>
+                                        {% else %}
+                                            <a href="?page={{ post_page_obj.paginator.num_pages }}"><i class="fas fa-angle-right"></i></a>
+                                        {% endif %}
+                                        <a href="?page={{ post_page_obj.paginator.num_pages }}"><i class="fas fa-angle-double-right"></i></a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <h5>Posts</h5>
+                    </div>
+                    <table>
+                        <colgroup>
+                            <col class="user-post-ups">
+                            <col class="user-post-title">
+                            <col class="user-post-comments">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th class="user-post-th"><i class="fab fa-hotjar"></i></th>
+                                <th class="user-post-th">Thema</th>
+                                <th class="user-post-th">Kommentare</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if post_page_obj %}
+                                {% for post in post_page_obj %}   
+                                <tr class="user-post-table-row">
+                                    <td class="user-post-likes user-post-td">{{ post.likes.count }}</td>
+                                    <td class="user-post-title user-post-td"><a href="{% url 'boards:post' post.id %}">[{{ post.topic.topic }}] {{ post.title }}</a></td>
+                                    <td class="user-post-comments user-post-td">{{ post.comments.all.count }}</td>
+                                </tr>
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                        
+                    </table>
+                </div>
+            </div>
+            <div class="col-md-1"></div>
+        </div>
+    </div>
+
+{% endblock content %}
+
+
+
+
+<div class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-3"></div>
+    <div class="col-md">
+        <table style="table-layout: fixed; white-space: nowrap;">
+            <thead></thead>
+            <tbody>
+                <tr>
+                    <td>blahblahblah</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-1"></div>
+
+</div>

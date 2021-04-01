@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    Klatsch - {{ topic.topic }}
+{% endblock title %}
+
+
+{% block content %}
+{% include 'covers/cover-chat.html' %}
+<style>
+.chat-box-title-container {
+    width: 100%;
+    height: 50px;
+    line-height: 50px;
+    background-color: rgb(245, 184, 72);
+}
+.chat-box-title-container p {
+    font-family: monospace;
+    font-size: 1.5rem;
+    padding: 0 2%;
+    margin-bottom: 0;
+}
+.user-icon {
+    float: right;
+    font-size: 1.1rem;
+    padding-right: 2%;
+    margin-bottom: 0;
+}
+.chat-message-box {
+    width: 100%;
+    height: 550px;
+    border: 1px solid grey;
+    padding: 0 8px;
+    overflow-y:auto;
+}
+.chat-message-box p {
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: 1rem;
+}
+#messageInput {
+    width: 90%;
+    font-size: 1.3rem;
+    font-family: monospace;
+}
+#messageSend {
+    width: 10%;
+    font-size: 0.7rem;
+    float: right;
+}
+/* user message left side */
+.user-message {
+    margin-top: 8px;
+    clear: both;
+}
+.user-profile-image {
+    width: 35px;
+    height: 35px;
+    border-radius: 100%;
+    float: left;
+    margin-right: 5px;
+}
+.user-username {
+    font-size: 1.1rem;
+    font-family: 'Open Sans', sans-serif;
+    margin-bottom: 3px;
+}
+.user-message-content {
+    margin-left: 6%;  
+}
+.user-message-content span p {
+    padding: 5px 5px;
+    background-color: rgb(196, 194, 194);
+    border: 1px solid rgb(155, 153, 153);
+    border-radius: 10px;
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: 1rem;
+    word-break: break-all;
+    float: left;
+}
+/* user message right side */
+.user-right-message {
+    margin-top: 8px;
+    clear: both;
+}
+.user-profile-right-image {
+    width: 35px;
+    height: 35px;
+    border-radius: 100%;
+    margin-left: 5px;
+    float: right;
+}
+.user-right-username {
+    font-size: 1.1rem;
+    font-family: 'Open Sans', sans-serif;
+    text-align: right;
+    margin-bottom: 3px;
+}
+.user-message-right-content span p {
+    padding: 5px 5px;
+    background-color: rgb(196, 194, 194);
+    border: 1px solid rgb(155, 153, 153);
+    border-radius: 10px;
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: 1rem;
+    float: right;
+    word-break: break-all;
+}
+.user-join-message {
+    clear: both;
+}
+@media screen and (max-width:600px) {
+    .chat-box {
+        margin: auto 8px;
+    }
+    .button-to-topic-list {
+        margin: auto 8px;
+    }
+}
+</style>
+
+<div class="container-fluid mt-2">
+    <div class="row">
+
+        <div class="col-md-2"></div>
+
+        <div class="col-md p-0">
+            <div>
+                <a class="button-to-topic-list" href="{% url 'boards:topic' topic.slug %}"><button type="button" class="btn btn-sm btn-outline-dark mb-2">Zurück nach Themen</button></a>    
+            </div>
+            <div class="chat-box">
+                <div class="chat-box-title-container">
+                    <p class="user-icon"></p>
+                    <p>{{ topic.topic }}</p>
+                </div>
+                <div id="display-message" class="chat-message-box">
+                    
+                </div>
+                <div class="chat-message-input-box">
+                    <button id="messageSend" type="submit" class="btn btn-success"><i class="far fa-paper-plane"></i></button>
+                    <input id="messageInput" type="text">
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2"></div>
+
+    </div>
+</div>
+{{ request.user.avatar.url|json_script:"user-avatar" }}
+{{ request.user.username|json_script:"username"}}
+{{ room_name|json_script:"room-name" }}
+
+{% endblock content %}
+
+
+{% block websocket-content %}
+
+<script>
+    const roomName = JSON.parse($('#room-name').text())
+    const userName = JSON.parse($('#username').text())
+    const userAvatar = JSON.parse($('#user-avatar').text())
+    
+    const chatSocket = new WebSocket(
+        'ws://' +
+        window.location.host +
+        '/ws/chat/' +
+        roomName +
+        '/'
+    );
+
+    chatSocket.onmessage = function (e) {
+        const data = JSON.parse(e.data)
+
+        if (data.action == 'user_joined') {
+            // Send a message that user joined chatroom and display numbers of current users
+            joinMessage(data.joined_user);
+            $('.user-icon').text(`${data.numbers_of_users} Users`)
+        } else if (data.action == 'user_exits') {
+            // Display the numers of current users after users exit.
+            $('.user-icon').text(`${data.numbers_of_users} Users`)
+        } else if(data.action == 'user_message'){
+            // Display messages written by users.
+            userMessage(data.userAvatar, data.username, data.message);
+        }
+        scrollBottom();
+    }
+
+    function joinMessage(joinedUser) {
+        $('#display-message').append(
+            `<div class="user-join-message">
+                <p style="color: grey; text-align: center;"><strong>${joinedUser}</strong> ist diesem Chatraum beigetreten.</p>
+            </div>`
+        )
+    }
+    
+    function userMessage(avatarURL, username, message) {
+        
+        const newDiv = document.createElement("div");
+        let content;
+        if(username == userName){
+            content = `<div class="user-right-message">
+                    <img class="user-profile-right-image" src="${avatarURL}" alt="">
+                    <p class="user-right-username">${username}</p>
+                    <div class="user-message-right-content">
+                        <span><p>${message}</p></span>
+                    </div>
+                </div>`
+        } else {
+            content = `<div class="user-message">
+                        <img class="user-profile-image" src="${avatarURL}" alt="">
+                        <span class="user-username">${username}</span>
+                        <div class="user-message-content">
+                        <span><p>${message}</p></span>
+                    </div>
+                </div>`
+        }
+        
+        newDiv.innerHTML = content;
+        $('.chat-message-box').append(newDiv)
+    }
+
+    // scroll bottom function
+    function scrollBottom() {
+            let msgbox = document.querySelector(".chat-message-box")
+            msgbox.scrollTop = msgbox.scrollHeight
+    }
+
+
+    // pressing Enter, return key triggers the submit button.
+    $('#messageInput').focus();
+    $('#messageInput').keyup(function (e) {
+        if (e.keyCode === 13) {
+            $('#messageSend').click();
+        }
+    })
+
+    // Send messages to a websocket.
+    $('#messageSend').click(function(){
+        const message = $('#messageInput').val();
+
+        if(message) {
+            chatSocket.send(JSON.stringify({
+            'message': message,
+            'username': userName,
+            'user_avatar': userAvatar,
+        }));
+        $('#messageInput').val('');
+
+        } else {
+
+        }
+        
+
+    })
+
+
+
+</script>
+{% endblock websocket-content %}

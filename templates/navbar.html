@@ -1,0 +1,65 @@
+<!-- nav bar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand text-monospace" href="{% url 'boards:home' %}">DEUTSCH KLATSCH</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" >
+    <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarToggle">
+    <ul class="navbar-nav ml-auto">
+        {% if user.is_authenticated %}
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="UserProfileDropdown" role="button" data-toggle="dropdown" aria-expanded="false">
+                    {{ user.username }}
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="UserProfileDropdown">
+                    <li><a class="dropdown-item" href="{% url 'user:profile' user.username %}">Profil</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{% url 'user:logout' %}">Ausloggen</a></li>
+                  </ul>
+            </li>
+        {% else %}
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'account_login' %}">Einloggen</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'account_signup' %}">Anmelden</a>
+            </li>
+        {% endif %}
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'boards:about' %}">Über Klatsch</a>
+            </li>
+    </ul>
+    </div>
+</nav>
+
+<!-- login signup modal -->
+<!-- Login page -->
+<!-- <div class="modal fade" id="loginPage">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header text-center">
+                <h4 class="modal-title text-center w-100 font-weight-bold">Login</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="close">&times;</button>
+            </div>
+            <div class="modal-body mx-3">
+
+                <div class="md-form mb-5">
+                    <i class="fas fa-user prefix grey-text"></i>
+                    <input type="text" class="form-control validate">
+                    <label data-error="wrong" data-success="right">email address</label>
+                </div>
+
+                <div class="md-form mb-5">
+                    <i class="fas fa-envelope prefix grey-text"></i>
+                    <input type="password" class="form-control validate">
+                    <label data-error="wrong" data-success="right">password</label>
+                </div>
+
+            </div>
+            <div class="modal-footer d-flex justify-content-center">
+                <button class="btn btn-primary">Login</button>
+            </div>
+        </div>
+    </div>
+</div> -->

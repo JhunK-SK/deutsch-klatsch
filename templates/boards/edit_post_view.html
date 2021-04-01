@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static }
+{% load crispy_forms_tags %}
+
+{% block title %}
+    Posting {{ topic }}
+{% endblock title %}
+
+
+{% block content %}
+{% include 'covers/cover-create.html' %}
+
+<div class="container-fluid mt-2">
+    <div class="row">
+
+        <div class="col-md-1"></div>
+
+        <div class="col-md p-0">
+            <!-- post header container use same css setting as topic view -->
+            <div class="post-header-container">
+                <p class="h2 text-center text-monospace">
+                    <a href="{% url 'boards:topic' topic.slug %}">{{ topic }}</a>
+                </p>
+                <hr>
+            </div>
+
+            <div class="post-edit-section">
+                <div class="row justify-content-center">
+                    <div class="col-10">
+                        <form method="POST" id="editForm">
+                            {% csrf_token %}
+                            {{ form.title }}
+                            {{ form.post }}
+                            
+                        </form>
+                        <div class="post-edit-button">
+                            <button form="editForm" class="btn btn-outline-dark btn-sm post-button" type="submit">Überarbeiten</button>
+                            <a href="{{ previous_page }}"><button class="btn btn-outline-info btn-sm cancel-button">Abbrechen</button></a>    
+                        </div>
+                        
+                    </div>
+                </div>
+                
+            </div>
+            
+        </div>
+
+        <div class="col-md-1"></div>
+
+    </div>
+</div>
+
+
+{% endblock content %}

@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load post_extras %}
+{% block title %}
+    Thema Anfrage
+{% endblock title %}
+
+
+{% block content %}
+{% include 'covers/cover-topic-request.html' %}
+
+<div class="container-fluid mt-2">
+    <div class="row">
+
+        <div class="col-md-1"></div>
+
+        <div class="col-md p-0">
+
+            <div class="button-container">
+                <div class="write-button">
+                    <a href="{% url 'boards:request_create' %}"><button type="button" class="btn btn-sm btn-outline-dark"><i class="fas fa-keyboard"></i> Schreiben</button></a>
+                </div>
+                <div>
+                    <a href="{% url 'boards:home' %}"><button type="button" class="btn btn-sm btn-outline-dark">Zurück nach Themen</button></a>    
+                </div>
+            </div>
+
+            <div class="container-fluid p-0">
+                <table>
+                    <colgroup>
+                        <col class="seven">
+                        <col class="fifty">
+                        <col class="ten">
+                        <col class="twenty">
+                        <col class="ten">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th class="topic-th"><i class="fab fa-hotjar"></i></th>
+                            <th class="topic-th">Titel</th>
+                            <th class="topic-th">Schwätzer</th>
+                            <th class="topic-th">Datum</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- post pagination -->
+                        <!-- It shares css set with other pages -->
+                        {% for request in request_obj %}
+                        <tr class="topic-table-row">
+                            <td class="post-likes topic-td" id="requestCount{{ request.id }}">{{ request.like_count }}</td>
+                            <td class="post-title topic-td"><a href="#" data-toggle="modal" data-target="#requestDetail{{ request.id }}">{{ request.topic }}</a></td>
+                            <td class="post-writer topic-td">{{ request.writer.username }}</td>
+                            <td class="post-date topic-td">{{ request.date_created|date:"H:i d, M, y"}}</td>
+                        </tr>
+                        <!-- modal section -->
+                        <div class="modal fade" id="requestDetail{{ request.id }}" tabindex="-1" aria-labelledby="requestDetail" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-scrollable">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h5 class="modal-title" id="requestDetail">Thema Anfrage</h5>
+                                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                  </button>
+                                </div>
+                                <div class="modal-body">
+                                    <h5><strong>Thema</strong>: {{ request.topic }}</h5>
+                                    <h6><strong>Kategorie</strong>: {{ request.category }}</h6>
+                                    <p><strong>Absicht</strong>: {{ request.purpose }}</p>
+                                    <br><hr><br>
+                                    <p>Wenn Sie über dieses Thema reden möchten, Bitte drücken Sie das Symbol under.</p>
+                                    <h2 class="requestRecommandation text-center" id="recommendation{{ request.id }}" data-url="{% url 'boards:request_recommendation' %}" data-requestid="{{ request.id }}">{% recommendedOrNot user request.id %}</h2>
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-primary" data-dismiss="modal">Zurück</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="post-pagination-section">
+                    <div class="">
+                        <div class="page-buttons mt-2 d-flex justify-content-center">
+                            {% if request_obj %}
+                                <a href="?page=1"><i class="fas fa-fast-backward"></i></a>
+                                {% if request_obj.has_previous %}
+                                    <a href="?page={{ request_obj.previous_page_number }}"><i class="fas fa-caret-left"></i></a>
+                                {% else %}
+                                    <a href="?page=1"><i class="fas fa-caret-left"></i></a>
+                                {% endif %}
+                                
+                                {% for num in request_obj.paginator.page_range %}
+                                    {% if request_obj.number == num %}
+                                        <a href="?page={{ num }}"><strong>{{ num }}</strong></a>
+                                    {% elif num > request_obj.number|add:'-3' and num < request_obj.number|add:'+3' %}
+                                        <a href="?page={{ num }}">{{ num }}</a>
+                                    {% endif %}
+                                {% endfor %}
+                                                            
+                                {% if page_obj.has_next %}
+                                    <a href="?page={{ request_obj.next_page_number }}"><i class="fas fa-caret-right"></i></a>
+                                {% else %}
+                                    <a href="?page={{ request_obj.paginator.num_pages }}"><i class="fas fa-caret-right"></i></a>
+                                {% endif %}
+                                <a href="?page={{ request_obj.paginator.num_pages }}"><i class="fas fa-fast-forward"></i></a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-md-1"></div>
+
+    </div>
+</div>
+
+{% endblock content %}

@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% load static }
+{% load humanize %}
+{% load crispy_forms_tags %}
+{% load post_extras %}
+
+{% block title %}
+    Board: {{ topic }}
+{% endblock title %}
+
+
+{% block content %}
+{% include 'covers/cover-posts.html' %}
+
+<div class="container-fluid mt-2">
+    <div class="row">
+
+        <div class="col-md-1"></div>
+
+        <div class="col-md p-0">
+            <div class="post-header-container">
+                <p class="h2 text-center text-monospace">
+                    <a href="{% url 'boards:topic' topic.slug %}">{{ topic }}</a>
+                </p>
+                <hr>
+                <p class="h4 text-left text-monospace post-title">{{ post.title }}</p>
+                <div class="post-info">
+                    <p class="post-info-views-ups"><span>{{ post.view_count }} Ansichten</span> <span id="post-info-ups">{{ post.like_count }} Up</span></p>  
+                    <p>{{ post.writer.username }} | {{ post.date_created }}</p>
+                    <hr>                       
+                </div>
+            </div>
+
+            <div class="post-content-section">
+                <div class="row">
+                    <div class="col">
+                        <div class="container-fluid p-0">
+                            <div class="post-content-part">
+                                {{ post.post|safe }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reader-likes-section">
+                <div class="fire-icon">
+                    <i class="fab fa-hotjar" style="color: {% likeOrNot user post.id %}" id="likeIcon" data-postid="{{ post.id }}" data-url="{% url 'boards:post_likes' %}"></i>
+                    <p id="like-counts">{{ post.like_count }} Up</p>
+                </div>
+            </div>
+
+            <div class="writer-edit-delete-section mt-5">
+                {% if request.user == post.writer %}
+                <a href="{% url 'boards:edit' post.id %}"><button class="btn btn-sm btn-secondary">Post Überarbeiten</button></a>
+                <a href="{% url 'boards:delete' post.id %}"><button class="btn btn-sm btn-danger">Post Löschen</button></a>
+                {% endif %}
+            </div>
+
+            <!-- Commentttt section was here -->
+            <div class="comments-list-section" id="comments-list">
+                <div class="mb-3 mt-3">
+                    <button class="float-right btn btn-dark btn-sm text-monospace" id="commentOpenCloseButton">Schließen</button>
+                    {% with comments.count as total_counts %}
+                    {% if total_counts == 0 %}
+                        <h3>{{ total_counts }} Kommentar</h3>
+                    {% else %}
+                        <h3>{{ total_counts }} Kommentar{{ total_counts|pluralize:",e"}}</h3>
+                    {% endif %}
+                    {% endwith %}
+                    <hr class="comments-hr mt-2">
+                </div>
+                
+                
+
+                {% load mptt_tags %}
+                <div class="mptt-comments" id="mpttComments">
+                    {% recursetree comments %}
+                        {% if node.writer == user and user.is_authenticated %}
+                            <div class="comment-dropdown dropleft">
+                                <i class="fas fa-ellipsis-v" id="edit-delete-dots" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>
+                                <div class="dropdown-menu" aria-labelledby="edit-delete-dots">
+                                <a class="dropdown-item" data-toggle="modal" data-target="#deleteCommentModal{{ node.id }}">Löschen</a>
+                            </div>
+                            </div>
+
+                            <div class="delete-comment-modal-section">
+                                <div class="modal fade" id="deleteCommentModal{{ node.id }}" tabindex="-1" aria-labelledby="deleteComment" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title text-monospace" id="deleteComment">Kommentar Löschen</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body text-monospace">
+                                                Wollen Sie Ihren Kommentar löschen?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-sm btn-secondary text-monospace" data-dismiss="modal">Abbrechen</button>
+                                                <a href="{% url 'boards:comment-delete' node.id %}"><button type="button" class="btn btn-sm btn-primary text-monospace">Löschen</button></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <div class="comment-info-container" id="comment-{{ node.id }}">
+                            <p class="comment-info comment-writer-time">{{ node.writer.username }} | {{ node.date_created|naturaltime }}</p>
+                            <p class="comment-content comment-new-content">{{ node.comment|safe }}</p>
+                            {% if node.level < 3 %}
+                            <button class="commentReplyButton btn btn-sm btn-outline-info mb-2" data-id="{{ node.id }}" data-postid="{{ post.id }}">Antworten</button>
+                            {% endif %}
+                            <hr>
+                        </div>
+
+                        {% if not node.is_leaf_node %}
+                        <div class="children pl-3">
+                            {{ children }}
+                        </div>  
+                        {% endif %}
+
+                    {% endrecursetree %}
+                </div>
+            </div>
+            
+            <div class="comments-form-section mt-3">
+                <form data-url="{% url 'boards:comment' post.id %}" id="commentForm">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <button class="btn btn-outline-dark text-monospace" type="submit" id="commentButton">Kommentieren</button>
+                </form>
+            </div>
+
+        </div>
+
+        <div class="col-md-1"></div>
+
+    </div>
+</div>
+
+{% endblock content %}
+
+
+<!-- <div class="comments-list-section" id="comments-list">
+    {% with comments.count as total_counts %}
+        {% if total_counts == 0 %}
+            <h3>{{ total_counts }} Kommentar</h3>
+        {% else %}
+            <h3>{{ total_counts }} Kommentar{{ total_counts|pluralize:",e"}}</h3>
+        {% endif %}
+    {% endwith %}
+
+    <h3>Kommentare</h3>
+    <hr class="comments-hr">
+    {% for comment in comments %}
+        
+        {% if comment.writer == request.user and request.user.is_authenticated %}
+        <div class="comment-dropdown dropleft">
+            <i class="fas fa-ellipsis-v" id="edit-delete-dots" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>
+            <div class="dropdown-menu" aria-labelledby="edit-delete-dots">
+            <a class="dropdown-item" data-toggle="modal" data-target="#deleteCommentModal{{ comment.id }}">Löschen</a>
+            <a class="dropdown-item comment-edit-button" data-url="{% url 'boards:comment-edit' comment.id %}">Überarbeiten</a>
+          </div>
+        </div>
+
+        <div class="delete-comment-modal-section">
+            <div class="modal fade" id="deleteCommentModal{{ comment.id }}" tabindex="-1" aria-labelledby="deleteComment" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-monospace" id="deleteComment">Kommentar Löschen</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body text-monospace">
+                            Wollen Sie Ihren Kommentar löschen?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-sm btn-secondary text-monospace" data-dismiss="modal">Abbrechen</button>
+                            <a href="{% url 'boards:comment-delete' comment.id %}"><button type="button" class="btn btn-sm btn-primary text-monospace">Löschen</button></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        <div class="comment-info-container" id="comment-{{ comment.id }}">
+            <p class="comment-info comment-writer-time">{{ comment.writer.username }} | {{ comment.date_created|naturaltime }}</p>
+            <p class="comment-content comment-new-content">{{ comment.comment|safe }}</p>
+        </div>
+    <hr>
+    {% endfor %}
+</div> -->

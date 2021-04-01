@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load static }
+{% load crispy_forms_tags %}
+{% load post_extras %}
+{% block title %}
+    Board: {{ topic }}
+{% endblock title %}
+
+
+{% block content %}
+{% include 'covers/cover-topics.html' %}
+
+<div class="container-fluid mt-2">
+    <div class="row">
+
+        <div class="col-md-1"></div>
+
+        <div class="col-md p-0">
+            
+            <div class="topic-container">
+                <a href="{% url 'boards:topic' topic.slug %}" class="h2 text-monospace">{{ topic }}</a>
+                <hr>
+            </div>
+
+            <div class="button-container">
+                <div class="write-button">
+                    <span id="favorite-topic" data-toggle="tooltip" data-placement="top" title="Speichern Sie dies als Lieblingsthema" data-topicslug="{{ topic.slug }}" data-url="{% url 'boards:topic_favorite' %}">{% favoriteOrNot user topic.slug %}</span>
+                    <a href="{% url 'boards:create' topic.slug %}"><button type="button" class="btn btn-sm btn-outline-dark"><i class="fas fa-keyboard"></i> Schreiben</button></a>
+                </div>
+                <div>
+                    <a href="{% url 'boards:home' %}"><button type="button" class="btn btn-sm btn-outline-dark">Zurück nach Themen</button></a>    
+                </div>
+            </div>
+
+            <div class="container-fluid p-0">
+                <table>
+                    <colgroup>
+                        <col class="seven">
+                        <col class="fifty">
+                        <col class="ten">
+                        <col class="twenty">
+                        <col class="ten">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th class="topic-th"><i class="fab fa-hotjar"></i></th>
+                            <th class="topic-th">Titel</th>
+                            <th class="topic-th">Schwätzer</th>
+                            <th class="topic-th">Datum</th>
+                            <th class="topic-th">Ansichten</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- post pagination -->
+                        {% for post in page_obj.object_list %}
+                        <tr class="topic-table-row">
+                            <td class="post-likes topic-td">{{ post.like_count }}</td>
+                            <td class="post-title topic-td"><a href="{% url 'boards:post' post.id %}">{{ post.title }}{% if post.comments.count > 0 %}[{{ post.comments.count }}]{% endif %}</a></td>
+                            <td class="post-writer topic-td">{{ post.writer.username }}</td>
+                            <td class="post-date topic-td">{{ post.date_created|date:"H:i d, M, y"}}</td>
+                            <td class="post-views topic-td">{{ post.view_count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- pagination pages -->
+                <div class="post-pagination-section">
+                    <div class="">
+                        <div class="page-buttons mt-2 d-flex justify-content-center">
+                            {% if page_obj %}
+                                <a href="?page=1"><i class="fas fa-fast-backward"></i></a>
+                                {% if page_obj.has_previous %}
+                                    <a href="?page={{ page_obj.previous_page_number }}"><i class="fas fa-caret-left"></i></a>
+                                {% else %}
+                                    <a href="?page=1"><i class="fas fa-caret-left"></i></a>
+                                {% endif %}
+                                
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <a href="?page={{ num }}"><strong>{{ num }}</strong></a>
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'+3' %}
+                                        <a href="?page={{ num }}">{{ num }}</a>
+                                    {% endif %}
+                                {% endfor %}
+                                                            
+                                {% if page_obj.has_next %}
+                                    <a href="?page={{ page_obj.next_page_number }}"><i class="fas fa-caret-right"></i></a>
+                                {% else %}
+                                    <a href="?page={{ page_obj.paginator.num_pages }}"><i class="fas fa-caret-right"></i></a>
+                                {% endif %}
+                                <a href="?page={{ page_obj.paginator.num_pages }}"><i class="fas fa-fast-forward"></i></a>
+                            {% endif %}
+                        </div>
+                        <div class="post-search d-flex justify-content-center mt-2">
+                            <form action="" method="GET">
+                                <div class="form-row">
+                                    <div class="col">
+                                        {{ post_search.select }}
+                                    </div>
+                                    <div class="col">
+                                        {{ post_search.search }}
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-info float-right" type="submit">Suchen</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="topic-group-chat-section d-flex justify-content-center mt-3">
+                            <a href="{% url 'chat:room' topic.topic|lower %}" class="btn btn-sm btn-block btn-primary" style="width: 32%;">Gruppe Reden</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-1"></div>
+
+    </div>
+</div>
+
+{% endblock content %}
+
+<!-- {% for post in posts %}
+                        <tr class="topic-table-row">
+                            <td class="post-likes topic-td">#</td>
+                            <td class="post-title topic-td"><a href="{% url 'boards:post' post.id %}">{{ post.title }}</a></td>
+                            <td class="post-writer topic-td">{{ post.writer.username }}</td>
+                            <td class="post-date topic-td">{{ post.date_created|date:"H:i d, M, y"}}</td>
+                            <td class="post-views topic-td">#</td>
+                        </tr>
+                        {% endfor %} -->

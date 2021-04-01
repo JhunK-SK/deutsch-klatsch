@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static }
+{% load crispy_forms_tags %}
+
+{% block title %}
+    Deutch Klatsch löschen
+{% endblock title %}
+
+{% block content %}
+
+<div class="container-fluid mt-2">
+    <div class="row">
+
+        <div class="col-md-2"></div>
+
+        <div class="col-md-4 m-0 p-0">                
+            <form method="POST" id="userDeleteForm">
+                {% csrf_token %}
+                <h3>Sind Sie sicher, dass Sie Ihr Konto löschen möchten?</h3>
+            </form>
+            <div class="user-delete-button-section">
+                <button form="userDeleteForm" type="submit" class="btn btn-outline-danger button-delete">Löschen</button>
+                <a href="{{ previous_page }}"><button type="button" class="btn btn-outline-dark">Ich möchte nicht löschen</button></a>
+            </div>                                 
+        </div>
+
+        <div class="col-md-4"></div>
+        <div class="col-md-2"></div>
+
+    </div>
+</div>
+
+{% endblock content %}

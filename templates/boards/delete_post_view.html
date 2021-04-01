@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load static }
+
+{% block title %}
+    Board: {{ post.topic }}
+{% endblock title %}
+
+
+{% block content %}
+
+{% include 'covers/cover-create.html' %}
+
+<div class="container-fluid mt-2">
+    <div class="row">
+
+        <div class="col-md-1"></div>
+
+        <div class="col-md p-0">
+            <!-- post header container use same css setting as topic view -->
+            <div class="post-header-container">
+                <p class="h2 text-center text-monospace">
+                    <a href="{% url 'boards:topic' topic.slug %}">{{ topic.topic }}</a>
+                </p>
+                <hr>
+            </div>
+
+            <div class="post-delete-section">
+                <div class="row justify-content-center">
+                    <div class="col-1"></div>
+                    <div class="col-sm">
+                        <form method="POST" id="deleteForm">
+                            {% csrf_token %}
+                            <h4>Ihrer Post: {{ post.title }}</h4>
+                            <p>Sind Sie sicher dass sie diesen Post löschen?</p>
+               
+                        </form>
+                        <div class="post-delete-button-section">
+                            <button form="deleteForm" type="submit" class="btn btn-outline-danger button-delete">Löschen</button>
+                            <a href="{{ previous_page }}" class="button-back"><button type="button" class="btn btn-outline-dark">Ich möchte nicht löschen</button></a>
+                        </div>                                 
+                    </div>
+                    <div class="col-1"></div>
+                </div>
+                
+            </div>
+            
+        </div>
+
+        <div class="col-md-1"></div>
+
+    </div>
+</div>
+
+{% endblock content %}
+
+h2 class="ml-5 mt-3">{{ post.topic }}</h2>
+
+    <div class="wrapper">
+        <div class="grid-box"></div>
+        <div class="grid-box">
+            <form method="POST">
+                {% csrf_token %}
+                <p>are you sure that you delete your post(title: {{ post.title }})</p>
+
+                <input type="submit" value="Delete" class="btn btn-danger">
+            </form>
+            <a href="{% url 'boards:post' post.id %}"><button class="btn btn-info">back to post</button></a>
+        </div>
+        <div class="grid-box"></div>
+    </div>

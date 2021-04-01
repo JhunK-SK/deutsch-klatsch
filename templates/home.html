@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    Deutsch Klatsch
+{% endblock title %}
+
+{% block content %}
+{% include 'covers/cover-home.html' %}
+
+<div class="container-fluid mt-2">
+    <div class="row">
+        <div class="col-md-2">
+
+        </div>
+        <div class="col-md-8">
+
+            <p class="h2 text-center text-monospace">Klatsch Kategorie</p>
+            <hr>
+
+            <div class="d-flex justify-content-end">
+                <p class="text-monospace badge badge-dark" id="topicsToggle">Show All</p>
+            </div>
+
+            <div class="accordion" id="boardCategory">
+                {% if user.is_authenticated and user.favorite.all.count > 0 %}
+                <div class="card bg-dark">
+                    <div class="card-header" id="userFavorites">
+                    <h2 class="mb-0">
+                        <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#favorites" aria-expanded="true" aria-controls="userFavorites">
+                            <p class="h3 text-white text-monospace">Lieblingsthema</p>
+                        </button>
+                    </h2>
+                    </div>
+                
+                    <div id="favorites" class="collapse" aria-labelledby="userFavorites" data-parent="#boardCategory">
+                        <div class="card-body">
+                            {% for topic in user.favorite.all %}
+                                <a href="{% url 'boards:topic' topic.slug %}" class="text-white text-monospace text-decoration-none">{{ topic }}&nbsp;|&nbsp;</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% for board in boards %}
+                    <div class="card bg-dark">
+                        <div class="card-header" id="{{ board.slug }}">
+                        <h2 class="mb-0">
+                            <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#{{ board }}" aria-expanded="true" aria-controls="{{ board }}">
+                                <p class="h3 text-white text-monospace">{{ board }}</p>
+                            </button>
+                        </h2>
+                        </div>
+                    
+                        <div id="{{ board }}" class="collapse" aria-labelledby="{{ board.slug }}" data-parent="#boardCategory">
+                            <div class="card-body">
+                                {% for topic in board.topic_set.all %}
+                                    <a href="{% url 'boards:topic' topic.slug %}" class="text-white text-monospace text-decoration-none">{{ topic }}&nbsp;|&nbsp;</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <div class="topic-request-section mt-3">
+                    <div class="topic-request-button d-flex justify-content-end">
+                        <a href="{% url 'boards:request_list' %}"><button class="btn btn-sm btn-outline-dark">Thema Anfrage</button></a>
+                    </div>
+                </div>
+
+            </div>
+        <div class="col-md-2"></div>
+    </div>
+</div>
+
+{% endblock content %}

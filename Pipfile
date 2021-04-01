@@ -1,0 +1,26 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "*"
+psycopg2-binary = "*"
+python-decouple = "*"
+django-allauth = "*"
+django-crispy-forms = "*"
+pillow = "*"
+django-summernote = "*"
+django-mptt = "*"
+channels = "*"
+channels-redis = "*"
+django-debug-toolbar = "*"
+django-redis = "*"
+environs = {version = "==8.0.0", extras = ["django"]}
+daphne = "*"
+gunicorn = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"

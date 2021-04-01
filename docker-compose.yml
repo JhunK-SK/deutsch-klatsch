@@ -1,0 +1,39 @@
+version: '3.8'
+
+services: 
+  web:
+    build: .
+    container_name: django
+    command: python /Users/kz/Desktop/projects/community_app/manage.py runserver 0.0.0.0:8000
+    volumes: 
+      - .:/Users/kz/Desktop/projects/community_app/
+    ports:
+      - 8000:8000
+    depends_on: 
+      - commu_db
+      - redis
+    env_file:
+      - ./.env.dev
+  
+  commu_db:
+    image: postgres:13
+    container_name: postgres
+    volumes: 
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - 5432:5432
+    environment: 
+      - POSTGRES_USER=commu_db
+      - POSTGRES_PASSWORD=commu_db
+      - POSTGRES_DB=commu_db_dev
+
+  redis:
+    container_name: redis
+    hostname: comm_redis
+    image: redis:5
+    ports:
+      - "6379:6379"
+    
+
+volumes: 
+  postgres_data:
