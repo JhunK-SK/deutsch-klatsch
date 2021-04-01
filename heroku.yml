@@ -2,7 +2,7 @@ build:
   docker:
     web: Dockerfile
   
-run:
-  web: 
+release:
+  command:
     - python manage.py migrate
     - python manage.py collectstatic
