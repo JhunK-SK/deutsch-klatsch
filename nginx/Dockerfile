@@ -3,6 +3,8 @@ FROM nginx:1.19.8-alpine
 RUN rm /etc/nginx/conf.d/default.conf
 COPY ./nginx.conf /etc/nginx/conf.d
 
+ENV PORT=$PORT
+
 CMD sed -i -e 's/$PORT/'"$PORT"'/g' /etc/nginx/conf.d/nginx.conf && nginx -g 'daemon off;'
 
 # COPY ./nginx.conf /etc/nginx/conf.d/default.conf
