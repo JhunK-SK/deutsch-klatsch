@@ -293,7 +293,7 @@ table {
     display: flex;
     justify-content: flex-end;
 }
-
+    
 @media screen and (max-width: 600px) {
     .post-header-container {
         margin: 0px 10px;
